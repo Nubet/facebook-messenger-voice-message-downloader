@@ -6,6 +6,12 @@ import {
   type PlayerRegisteredMessage,
 } from '../../messaging/audio-messages'
 import type {ExecutionContext} from '../../domain/audio/execution-context'
+import {
+  isBlobDownloadMessage,
+  isDownloadRequestedMessage,
+  type BlobDownloadMessage,
+  type DownloadRequestedMessage,
+} from '../../messaging/download-messages'
 
 type AudioCandidateListener = (
   candidate: AudioCandidate,
@@ -20,6 +26,11 @@ type PlayerRegistrationListener = (
   registration: PlayerRegistration,
   sender: chrome.runtime.MessageSender
 ) => void
+type DownloadRequestListener = (
+  request: DownloadRequestedMessage,
+  sender: chrome.runtime.MessageSender
+) => void
+type BlobDownloadListener = (message: BlobDownloadMessage) => void
 
 export const browserMessaging = {
   sendAudioCandidateToBackground(candidate: AudioCandidate) {
@@ -44,6 +55,21 @@ export const browserMessaging = {
     )
   },
 
+  sendDownloadRequest(playerId: string, context: ExecutionContext) {
+    chrome.runtime.sendMessage(
+      {type: 'download.requested', playerId, context} satisfies DownloadRequestedMessage,
+      () => void chrome.runtime.lastError
+    )
+  },
+
+  sendBlobDownloadToTab(tabId: number, url: string, filename: string) {
+    chrome.tabs.sendMessage(
+      tabId,
+      {type: 'download.blob', url, filename} satisfies BlobDownloadMessage,
+      () => void chrome.runtime.lastError
+    )
+  },
+
   subscribeToAudioCandidates(listener: AudioCandidateListener) {
     const handleMessage = (
       message: unknown,
@@ -64,6 +90,27 @@ export const browserMessaging = {
       if (isPlayerRegisteredMessage(message)) {
         listener(message, sender)
       }
+    }
+
+    chrome.runtime.onMessage.addListener(handleMessage)
+    return () => chrome.runtime.onMessage.removeListener(handleMessage)
+  },
+
+  subscribeToDownloadRequests(listener: DownloadRequestListener) {
+    const handleMessage = (
+      message: unknown,
+      sender: chrome.runtime.MessageSender
+    ) => {
+      if (isDownloadRequestedMessage(message)) listener(message, sender)
+    }
+
+    chrome.runtime.onMessage.addListener(handleMessage)
+    return () => chrome.runtime.onMessage.removeListener(handleMessage)
+  },
+
+  subscribeToBlobDownloads(listener: BlobDownloadListener) {
+    const handleMessage = (message: unknown) => {
+      if (isBlobDownloadMessage(message)) listener(message)
     }
 
     chrome.runtime.onMessage.addListener(handleMessage)

@@ -33,12 +33,16 @@ export type AudioCorrelationStoreOptions = {
 export class AudioCorrelationStore {
   private readonly players = new Map<string, PlayerRecord>()
   private readonly audio = new Map<string, AudioRecord>()
+  private readonly readyCandidates = new Map<
+    string,
+    {candidate: AudioCandidate; createdAt: number}
+  >()
   private readonly now: () => number
   private readonly persistence: StorePersistence
   private readonly ttlMs: number
   private readonly maxRecords: number
   private readonly durationToleranceMs: number
-  private readonly ready: Promise<void>
+  private readonly readyPromise: Promise<void>
   private saveQueue = Promise.resolve()
 
   constructor(options: AudioCorrelationStoreOptions = {}) {
@@ -48,7 +52,7 @@ export class AudioCorrelationStore {
     this.maxRecords = options.maxRecords ?? DEFAULT_MAX_RECORDS
     this.durationToleranceMs =
       options.durationToleranceMs ?? DEFAULT_DURATION_TOLERANCE_MS
-    this.ready = this.restore()
+    this.readyPromise = this.restore()
   }
 
   async registerPlayer(
@@ -56,7 +60,7 @@ export class AudioCorrelationStore {
     durationMs: number,
     context: ExecutionContext
   ): Promise<CorrelationMatch | null> {
-    await this.ready
+    await this.readyPromise
     this.cleanup()
 
     const playerKey = this.getPlayerKey(playerId, context)
@@ -65,6 +69,10 @@ export class AudioCorrelationStore {
     const match = this.findAudioMatch(durationMs, context)
     if (match) {
       this.audio.delete(match.key)
+      this.readyCandidates.set(
+        this.getPlayerKey(playerId, context),
+        {candidate: match.record.candidate, createdAt: this.now()}
+      )
       await this.persist()
       return {playerId, candidate: match.record.candidate}
     }
@@ -81,7 +89,7 @@ export class AudioCorrelationStore {
   }
 
   async registerAudio(candidate: AudioCandidate): Promise<CorrelationMatch | null> {
-    await this.ready
+    await this.readyPromise
     this.cleanup()
 
     if (candidate.durationMs <= 0) return null
@@ -89,6 +97,10 @@ export class AudioCorrelationStore {
     const match = this.findPlayerMatch(candidate)
     if (match) {
       this.players.delete(match.key)
+      this.readyCandidates.set(
+        this.getPlayerKey(match.record.playerId, match.record.context),
+        {candidate, createdAt: this.now()}
+      )
       await this.persist()
       return {playerId: match.record.playerId, candidate}
     }
@@ -98,6 +110,19 @@ export class AudioCorrelationStore {
     this.enforceLimit()
     await this.persist()
     return null
+  }
+
+  async takeCandidate(playerId: string, context: ExecutionContext) {
+    await this.readyPromise
+    this.cleanup()
+
+    const key = this.getPlayerKey(playerId, context)
+    const readyCandidate = this.readyCandidates.get(key)
+    if (!readyCandidate) return null
+
+    this.readyCandidates.delete(key)
+    await this.persist()
+    return readyCandidate.candidate
   }
 
   private async restore() {
@@ -160,6 +185,10 @@ export class AudioCorrelationStore {
 
     for (const [key, record] of this.audio) {
       if (record.createdAt < expiresAt) this.audio.delete(key)
+    }
+
+    for (const [key, record] of this.readyCandidates) {
+      if (record.createdAt < expiresAt) this.readyCandidates.delete(key)
     }
 
     this.enforceLimit()

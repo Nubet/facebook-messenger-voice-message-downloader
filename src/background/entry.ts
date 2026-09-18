@@ -4,6 +4,8 @@ import {NetworkAudioSource} from './media/network-audio-source'
 import {browserMessaging} from '../infrastructure/browser/browser-messaging'
 import {browserStorage} from '../infrastructure/browser/browser-storage'
 import {browserCorrelationStorage} from '../infrastructure/browser/browser-correlation-storage'
+import {browserDownloads} from '../infrastructure/browser/browser-downloads'
+import {isAllowedDownloadUrl, getDownloadFilename} from '../domain/download/download-policy'
 import {AudioCorrelationStore} from './audio/audio-correlation-store'
 import type {ExecutionContext} from '../domain/audio/execution-context'
 
@@ -41,6 +43,25 @@ browserMessaging.subscribeToPlayerRegistrations((registration, sender) => {
     withSenderContext(registration, sender).context
   )
 })
+
+browserMessaging.subscribeToDownloadRequests((request, sender) => {
+  void handleDownloadRequest(request.playerId, withSenderContext(request, sender).context)
+})
+
+async function handleDownloadRequest(playerId: string, context: ExecutionContext) {
+  const candidate = await correlationStore.takeCandidate(playerId, context)
+  if (!candidate || !isAllowedDownloadUrl(candidate.url)) return
+
+  const filename = getDownloadFilename(candidate.mimeType)
+  if (candidate.source === 'blob') {
+    if (!candidate.url.startsWith('blob:') || context.tabId === null) return
+
+    browserMessaging.sendBlobDownloadToTab(context.tabId, candidate.url, filename)
+    return
+  }
+
+  await browserDownloads.download(candidate.url, filename).catch(() => {})
+}
 
 function withSenderContext<T extends {context: ExecutionContext}>(
   value: T,

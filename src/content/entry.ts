@@ -4,6 +4,7 @@ import {
 } from './content-lifecycle'
 import {getPlayerAdapter} from './dom/get-player-adapter'
 import {BlobAudioSource} from './media/blob-audio-source'
+import {downloadBlobUrl} from './media/blob-downloader'
 import {resolveAudioDuration} from './media/audio-analyzer'
 import {PlayerScanner} from './player-scanner'
 import {browserMessaging} from '../infrastructure/browser/browser-messaging'
@@ -27,6 +28,7 @@ export default function initial() {
     browserMessaging.sendAudioCandidateToBackground(candidate)
   })
   let unsubscribeNetworkCandidates = () => {}
+  let unsubscribeBlobDownloads = () => {}
 
   const pipeline: ContentPipeline = {
     start: () => {
@@ -43,12 +45,19 @@ export default function initial() {
             .catch(() => {})
         }
       )
+      unsubscribeBlobDownloads = browserMessaging.subscribeToBlobDownloads(
+        (message) => {
+          void downloadBlobUrl(message.url, message.filename).catch(() => {})
+        }
+      )
     },
     stop: () => {
       scanner.stop()
       blobAudioSource.stop()
       unsubscribeNetworkCandidates()
       unsubscribeNetworkCandidates = () => {}
+      unsubscribeBlobDownloads()
+      unsubscribeBlobDownloads = () => {}
     },
     removeInjectedUi: () => scanner.removeInjectedUi(),
   }

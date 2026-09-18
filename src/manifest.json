@@ -25,7 +25,8 @@
   "permissions": [
     "storage",
     "activeTab",
-    "webRequest"
+    "webRequest",
+    "downloads"
   ],
   "host_permissions": [
     "https://*.fbcdn.net/*",
