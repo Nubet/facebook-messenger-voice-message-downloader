@@ -10,7 +10,78 @@ body {
 }
 
 .popup {
+  box-sizing: border-box;
+  width: 320px;
   padding: 16px;
+}
+
+.popup_header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.popup_header img {
+  width: 32px;
+  height: 32px;
+}
+
+.popup_header p,
+.toggle_row small {
+  display: block;
+  color: #5d687d;
+  font-size: 12px;
+}
+
+.status_card,
+.toggle_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid #e2e6ee;
+  border-radius: 10px;
+}
+
+.status_card {
+  justify-content: flex-start;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.status_dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #9aa4b5;
+}
+
+.status_dot_ready {
+  background: #16a36a;
+}
+
+.status_dot_error {
+  background: #d14343;
+}
+
+.toggle_row {
+  cursor: pointer;
+}
+
+.toggle_row strong {
+  display: block;
+  font-size: 13px;
+}
+
+.toggle_row input {
+  width: 18px;
+  height: 18px;
+}
+
+.error_message {
+  color: #b42318;
+  font-size: 12px;
 }
 
 h1 {

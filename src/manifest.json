@@ -22,6 +22,10 @@
     "64": "images/icon-64.png",
     "128": "images/icon-128.png"
   },
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
   "chromium:action": {
     "default_icon": {
       "16": "images/icon-16.png",
