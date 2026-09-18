@@ -1,3 +1,14 @@
+import {
+  startContentLifecycle,
+  type ContentPipeline,
+} from './content-lifecycle'
+
 export default function initial() {
-  // Content behavior will be added with the player integration phase.
+  const pipeline: ContentPipeline = {
+    start() {},
+    stop() {},
+    removeInjectedUi() {},
+  }
+
+  return startContentLifecycle(pipeline)
 }
