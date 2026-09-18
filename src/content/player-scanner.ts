@@ -1,13 +1,14 @@
 import type {DetectedPlayer} from '../domain/player/detected-player'
 import type {PlayerAdapter} from './dom/player-adapter'
 
-export type PlayerDetectedHandler = (player: DetectedPlayer) => void
+export type PlayerDetectedHandler = (player: DetectedPlayer) => (() => void) | void
 
 export class PlayerScanner {
   private enabled = false
   private pendingFrame: number | null = null
   private observer: MutationObserver | null = null
   private readonly detectedRoots = new Set<HTMLElement>()
+  private readonly injectedUiCleanup = new Set<() => void>()
 
   constructor(
     private readonly adapter: PlayerAdapter,
@@ -38,7 +39,8 @@ export class PlayerScanner {
   }
 
   removeInjectedUi() {
-    // The injector is added in the player UI phase.
+    this.injectedUiCleanup.forEach((cleanup) => cleanup())
+    this.injectedUiCleanup.clear()
   }
 
   private scan(root: ParentNode) {
@@ -48,7 +50,8 @@ export class PlayerScanner {
       if (this.detectedRoots.has(playerRoot)) return
 
       this.detectedRoots.add(playerRoot)
-      this.onPlayerDetected(this.adapter.toDetectedPlayer(playerRoot))
+      const cleanup = this.onPlayerDetected(this.adapter.toDetectedPlayer(playerRoot))
+      if (cleanup) this.injectedUiCleanup.add(cleanup)
     })
   }
 

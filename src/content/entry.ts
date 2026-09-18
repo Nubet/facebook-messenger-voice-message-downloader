@@ -9,6 +9,7 @@ import {resolveAudioDuration} from './media/audio-analyzer'
 import {PlayerScanner} from './player-scanner'
 import {browserMessaging} from '../infrastructure/browser/browser-messaging'
 import type {ExecutionContext} from '../domain/audio/execution-context'
+import {injectDownloadButton} from './ui/download-button'
 
 let playerSequence = 0
 
@@ -18,10 +19,16 @@ export default function initial() {
 
   const scanner = new PlayerScanner(adapter, (player) => {
     const context: ExecutionContext = {tabId: null, frameId: 0}
+    const playerId = `player-${Date.now()}-${playerSequence++}`
+
     browserMessaging.sendPlayerRegistration({
-      playerId: `player-${Date.now()}-${playerSequence++}`,
+      playerId,
       durationMs: player.durationMs,
       context,
+    })
+
+    return injectDownloadButton(player.injectionTarget, () => {
+      browserMessaging.sendDownloadRequest(playerId, context)
     })
   })
   const blobAudioSource = new BlobAudioSource((candidate) => {
