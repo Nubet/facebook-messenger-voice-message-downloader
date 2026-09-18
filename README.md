@@ -1,3 +1,5 @@
+<img src="./src/images/banner.png" alt="Facebook Messenger Voice Message Downloader banner" width="100%" />
+
 # Facebook Messenger Voice Message Downloader
 
 Browser extension for downloading voice messages from Facebook and Messenger directly from the conversation page
