@@ -2,17 +2,26 @@ export const EXTENSION_SETTINGS_KEY = 'extensionSettings'
 
 export const DEFAULT_EXTENSION_SETTINGS = {
   enabled: true,
+  downloadFormat: 'original',
 } as const
+
+export type DownloadFormat = 'original' | 'wav'
 
 export type ExtensionSettings = {
   enabled: boolean
+  downloadFormat: DownloadFormat
 }
 
 export function isExtensionSettings(value: unknown): value is ExtensionSettings {
+  if (typeof value !== 'object' || value === null || !('enabled' in value)) {
+    return false
+  }
+
+  if (typeof value.enabled !== 'boolean') return false
+
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    'enabled' in value &&
-    typeof value.enabled === 'boolean'
+    !('downloadFormat' in value) ||
+    value.downloadFormat === 'original' ||
+    value.downloadFormat === 'wav'
   )
 }

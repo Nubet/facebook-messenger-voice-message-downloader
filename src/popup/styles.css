@@ -48,6 +48,35 @@ body {
   cursor: pointer;
 }
 
+.select_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid #e2e6ee;
+  border-radius: 10px;
+}
+
+.select_row strong,
+.select_row small {
+  display: block;
+}
+
+.select_row strong {
+  font-size: 13px;
+}
+
+.select_row select {
+  max-width: 110px;
+  padding: 5px 6px;
+  border: 1px solid #cbd2df;
+  border-radius: 6px;
+  color: #172033;
+  background: #fff;
+}
+
 .toggle_row strong {
   display: block;
   font-size: 13px;
@@ -61,6 +90,27 @@ body {
 .error_message {
   color: #b42318;
   font-size: 12px;
+}
+
+.popup_footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e6ee;
+  color: #7a8496;
+  font-size: 11px;
+}
+
+.popup_footer a {
+  color: #7257c7;
+  text-decoration: none;
+}
+
+.popup_footer a:hover {
+  text-decoration: underline;
 }
 
 h1 {

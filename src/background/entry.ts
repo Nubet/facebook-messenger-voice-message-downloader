@@ -50,7 +50,18 @@ async function handleDownloadRequest(playerId: string, context: ExecutionContext
   const candidate = await correlationStore.takeCandidate(playerId, context)
   if (!candidate || !isAllowedDownloadUrl(candidate.url)) return
 
-  const filename = getDownloadFilename(candidate.mimeType)
+  const settings = await browserStorage.getSettings()
+  const filename = getDownloadFilename(
+    settings.downloadFormat === 'wav' ? 'audio/wav' : candidate.mimeType
+  )
+
+  if (settings.downloadFormat === 'wav') {
+    if (context.tabId === null) return
+
+    browserMessaging.sendConvertedDownloadToTab(context.tabId, candidate.url, filename)
+    return
+  }
+
   if (candidate.source === 'blob') {
     if (!candidate.url.startsWith('blob:') || context.tabId === null) return
 

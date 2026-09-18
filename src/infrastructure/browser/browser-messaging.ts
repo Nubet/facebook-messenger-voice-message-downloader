@@ -8,8 +8,10 @@ import {
 import type {ExecutionContext} from '../../domain/audio/execution-context'
 import {
   isBlobDownloadMessage,
+  isConvertedDownloadMessage,
   isDownloadRequestedMessage,
   type BlobDownloadMessage,
+  type ConvertedDownloadMessage,
   type DownloadRequestedMessage,
 } from '../../messaging/download-messages'
 
@@ -27,6 +29,7 @@ type DownloadRequestListener = (
   sender: chrome.runtime.MessageSender
 ) => void
 type BlobDownloadListener = (message: BlobDownloadMessage) => void
+type ConvertedDownloadListener = (message: ConvertedDownloadMessage) => void
 
 export const browserMessaging = {
   sendAudioCandidateToBackground(candidate: AudioCandidate) {
@@ -62,6 +65,14 @@ export const browserMessaging = {
     chrome.tabs.sendMessage(
       tabId,
       {type: 'download.blob', url, filename} satisfies BlobDownloadMessage,
+      () => void chrome.runtime.lastError
+    )
+  },
+
+  sendConvertedDownloadToTab(tabId: number, url: string, filename: string) {
+    chrome.tabs.sendMessage(
+      tabId,
+      {type: 'download.converted', url, filename} satisfies ConvertedDownloadMessage,
       () => void chrome.runtime.lastError
     )
   },
@@ -107,6 +118,15 @@ export const browserMessaging = {
   subscribeToBlobDownloads(listener: BlobDownloadListener) {
     const handleMessage = (message: unknown) => {
       if (isBlobDownloadMessage(message)) listener(message)
+    }
+
+    chrome.runtime.onMessage.addListener(handleMessage)
+    return () => chrome.runtime.onMessage.removeListener(handleMessage)
+  },
+
+  subscribeToConvertedDownloads(listener: ConvertedDownloadListener) {
+    const handleMessage = (message: unknown) => {
+      if (isConvertedDownloadMessage(message)) listener(message)
     }
 
     chrome.runtime.onMessage.addListener(handleMessage)

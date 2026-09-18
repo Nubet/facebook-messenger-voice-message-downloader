@@ -16,6 +16,12 @@ export type BlobDownloadMessage = {
   filename: string
 }
 
+export type ConvertedDownloadMessage = {
+  type: 'download.converted'
+  url: string
+  filename: string
+}
+
 export function isDownloadRequestedMessage(
   value: unknown
 ): value is DownloadRequestedMessage {
@@ -35,6 +41,18 @@ export function isBlobDownloadMessage(
 
   return (
     value.type === 'download.blob' &&
+    typeof value.url === 'string' &&
+    typeof value.filename === 'string'
+  )
+}
+
+export function isConvertedDownloadMessage(
+  value: unknown
+): value is ConvertedDownloadMessage {
+  if (!isRecord(value)) return false
+
+  return (
+    value.type === 'download.converted' &&
     typeof value.url === 'string' &&
     typeof value.filename === 'string'
   )

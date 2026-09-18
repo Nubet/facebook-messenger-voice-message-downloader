@@ -1,5 +1,6 @@
 import {
   DEFAULT_EXTENSION_SETTINGS,
+  type DownloadFormat,
   type ExtensionSettings,
 } from '../domain/settings/extension-settings'
 import {browserStorage} from '../infrastructure/browser/browser-storage'
@@ -39,7 +40,23 @@ export async function setEnabled(enabled: boolean) {
   updateSnapshot({enabled, errorMessage: null})
 
   try {
-    await browserStorage.setSettings({enabled})
+    await browserStorage.setSettings({
+      enabled,
+      downloadFormat: snapshot.downloadFormat,
+    })
+  } catch {
+    updateSnapshot({
+      status: 'error',
+      errorMessage: 'Could not save settings.',
+    })
+  }
+}
+
+export async function setDownloadFormat(downloadFormat: DownloadFormat) {
+  updateSnapshot({downloadFormat, errorMessage: null})
+
+  try {
+    await browserStorage.setSettings({enabled: snapshot.enabled, downloadFormat})
   } catch {
     updateSnapshot({
       status: 'error',
@@ -61,6 +78,7 @@ async function initializePopupState() {
 
     updateSnapshot({
       enabled: settings.enabled,
+      downloadFormat: settings.downloadFormat,
       isSupportedPage: page.isSupported,
       pageName: page.name,
       status: 'ready',
@@ -80,7 +98,11 @@ function updateSnapshot(update: Partial<PopupSnapshot>) {
 }
 
 function handleSettingsChange(settings: ExtensionSettings) {
-  updateSnapshot({enabled: settings.enabled, errorMessage: null})
+  updateSnapshot({
+    enabled: settings.enabled,
+    downloadFormat: settings.downloadFormat,
+    errorMessage: null,
+  })
 }
 
 function getPageDetails(url: string | undefined) {

@@ -14,7 +14,7 @@ export const browserStorage = {
     const settings = result[EXTENSION_SETTINGS_KEY]
 
     return isExtensionSettings(settings)
-      ? settings
+      ? {...DEFAULT_EXTENSION_SETTINGS, ...settings}
       : DEFAULT_EXTENSION_SETTINGS
   },
 
@@ -30,7 +30,9 @@ export const browserStorage = {
       if (areaName !== 'local' || !changes[EXTENSION_SETTINGS_KEY]) return
 
       const nextSettings = changes[EXTENSION_SETTINGS_KEY].newValue
-      if (isExtensionSettings(nextSettings)) listener(nextSettings)
+      if (isExtensionSettings(nextSettings)) {
+        listener({...DEFAULT_EXTENSION_SETTINGS, ...nextSettings})
+      }
     }
 
     chrome.storage.onChanged.addListener(handleChange)
