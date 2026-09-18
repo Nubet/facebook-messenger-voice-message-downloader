@@ -2,7 +2,7 @@
 
 # facebook-messenger-voice-message-downloader
 
-> Adds a sidebar panel to the browser with a simple React page.
+> Downloads voice messages from Facebook and Messenger.
 
 ## Commands
 

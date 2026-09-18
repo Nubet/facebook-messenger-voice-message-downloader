@@ -14,7 +14,7 @@ Last updated: 2026-09-18
 ## Listing
 
 - Name: facebook-messenger-voice-message-downloader
-- Summary: Adds a sidebar panel to the browser.
+- Summary: Downloads voice messages from Facebook and Messenger.
 - Description: TODO write two or three short paragraphs of user
   benefits. Describe what the user sees and gains, not how the code
   works.
@@ -35,12 +35,11 @@ Last updated: 2026-09-18
 
 ### Single purpose
 
-Adds a sidebar panel to the browser.
+Downloads voice messages from Facebook and Messenger.
 
 ### Permissions justification
 
-- sidePanel (Chromium only): Renders the extension's main interface in the browser side panel.
-- Content script match <all_urls>: The content script runs on the pages the user visits to render the extension's on-page interface. Narrow this to the specific sites your extension needs before submitting.
+- No host permissions are declared in this phase. Facebook and Messenger content scripts will be added with narrow matches in the next phase.
 
 ## Firefox Add-ons
 
