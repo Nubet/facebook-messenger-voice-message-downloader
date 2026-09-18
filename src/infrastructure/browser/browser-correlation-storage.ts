@@ -2,6 +2,7 @@ import type {
   PersistedCorrelationState,
   StorePersistence,
 } from '../../domain/audio/correlation-persistence'
+import {isRecord} from '../../shared/is-record'
 
 const STORAGE_KEY = 'audioCorrelationState'
 
@@ -46,8 +47,7 @@ export const browserCorrelationStorage: StorePersistence = {
 }
 
 function isPersistedState(value: unknown): value is PersistedCorrelationState {
-  if (typeof value !== 'object' || value === null) return false
+  if (!isRecord(value)) return false
 
-  const state = value as Partial<PersistedCorrelationState>
-  return Array.isArray(state.players) && Array.isArray(state.audio)
+  return Array.isArray(value.players) && Array.isArray(value.audio)
 }

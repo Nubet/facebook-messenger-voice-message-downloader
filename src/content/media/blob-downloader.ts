@@ -6,12 +6,15 @@ export async function downloadBlobUrl(url: string, filename: string) {
   link.download = filename
   link.style.display = 'none'
   document.body.appendChild(link)
-  link.click()
 
-  await new Promise<void>((resolve) => {
-    window.setTimeout(resolve, 100)
-  })
+  try {
+    link.click()
 
-  link.remove()
-  URL.revokeObjectURL(url)
+    await new Promise<void>((resolve) => {
+      window.setTimeout(resolve, 100)
+    })
+  } finally {
+    link.remove()
+    URL.revokeObjectURL(url)
+  }
 }

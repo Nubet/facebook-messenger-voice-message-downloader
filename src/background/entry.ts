@@ -1,5 +1,3 @@
-console.log('[Voice Message Downloader] Background entry loaded')
-
 import {NetworkAudioSource} from './media/network-audio-source'
 import {browserMessaging} from '../infrastructure/browser/browser-messaging'
 import {browserStorage} from '../infrastructure/browser/browser-storage'
@@ -66,7 +64,7 @@ async function handleDownloadRequest(playerId: string, context: ExecutionContext
 function withSenderContext<T extends {context: ExecutionContext}>(
   value: T,
   sender: chrome.runtime.MessageSender
-): T {
+): Omit<T, 'context'> & {context: ExecutionContext} {
   const senderWithDocument = sender as chrome.runtime.MessageSender & {
     documentId?: string
   }
@@ -78,5 +76,5 @@ function withSenderContext<T extends {context: ExecutionContext}>(
       frameId: sender.frameId ?? value.context.frameId,
       documentId: value.context.documentId ?? senderWithDocument.documentId,
     },
-  } as T
+  }
 }

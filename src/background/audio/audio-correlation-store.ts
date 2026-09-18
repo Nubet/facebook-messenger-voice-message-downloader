@@ -9,6 +9,7 @@ import type {
   PersistedPlayerRecord,
   StorePersistence,
 } from '../../domain/audio/correlation-persistence'
+import {isRecord} from '../../shared/is-record'
 
 const DEFAULT_TTL_MS = 30_000
 const DEFAULT_MAX_RECORDS = 200
@@ -259,26 +260,24 @@ function getContextKey(context: ExecutionContext) {
 }
 
 function isPlayerRecord(value: unknown): value is PlayerRecord {
-  if (typeof value !== 'object' || value === null) return false
+  if (!isRecord(value)) return false
 
-  const record = value as Partial<PlayerRecord>
   return (
-    typeof record.playerId === 'string' &&
-    typeof record.durationMs === 'number' &&
-    typeof record.createdAt === 'number' &&
-    isExecutionContext(record.context)
+    typeof value.playerId === 'string' &&
+    typeof value.durationMs === 'number' &&
+    typeof value.createdAt === 'number' &&
+    isExecutionContext(value.context)
   )
 }
 
 function isAudioRecord(value: unknown): value is AudioRecord {
-  if (typeof value !== 'object' || value === null) return false
+  if (!isRecord(value)) return false
 
-  const record = value as Partial<AudioRecord>
-  const candidate = record.candidate
+  const candidate = value.candidate
+  if (!isRecord(candidate)) return false
+
   return (
-    typeof record.createdAt === 'number' &&
-    typeof candidate === 'object' &&
-    candidate !== null &&
+    typeof value.createdAt === 'number' &&
     typeof candidate.url === 'string' &&
     typeof candidate.durationMs === 'number' &&
     (candidate.source === 'network' || candidate.source === 'blob') &&

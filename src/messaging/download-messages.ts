@@ -2,6 +2,7 @@ import {
   isExecutionContext,
   type ExecutionContext,
 } from '../domain/audio/execution-context'
+import {isRecord} from '../shared/is-record'
 
 export type DownloadRequestedMessage = {
   type: 'download.requested'
@@ -18,25 +19,23 @@ export type BlobDownloadMessage = {
 export function isDownloadRequestedMessage(
   value: unknown
 ): value is DownloadRequestedMessage {
-  if (typeof value !== 'object' || value === null) return false
+  if (!isRecord(value)) return false
 
-  const message = value as Partial<DownloadRequestedMessage>
   return (
-    message.type === 'download.requested' &&
-    typeof message.playerId === 'string' &&
-    isExecutionContext(message.context)
+    value.type === 'download.requested' &&
+    typeof value.playerId === 'string' &&
+    isExecutionContext(value.context)
   )
 }
 
 export function isBlobDownloadMessage(
   value: unknown
 ): value is BlobDownloadMessage {
-  if (typeof value !== 'object' || value === null) return false
+  if (!isRecord(value)) return false
 
-  const message = value as Partial<BlobDownloadMessage>
   return (
-    message.type === 'download.blob' &&
-    typeof message.url === 'string' &&
-    typeof message.filename === 'string'
+    value.type === 'download.blob' &&
+    typeof value.url === 'string' &&
+    typeof value.filename === 'string'
   )
 }

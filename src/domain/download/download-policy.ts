@@ -1,4 +1,4 @@
-const ALLOWED_NETWORK_HOSTS = ['fbcdn.net', 'fbsbx.com', 'cdninstagram.com']
+const ALLOWED_NETWORK_HOSTS = ['fbcdn.net', 'fbsbx.com', 'cdninstagram.com'] as const
 
 export function isAllowedDownloadUrl(value: string) {
   if (value.startsWith('blob:')) return true

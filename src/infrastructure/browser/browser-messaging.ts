@@ -17,11 +17,7 @@ type AudioCandidateListener = (
   candidate: AudioCandidate,
   sender: chrome.runtime.MessageSender
 ) => void
-type PlayerRegistration = {
-  playerId: string
-  durationMs: number
-  context: ExecutionContext
-}
+type PlayerRegistration = Omit<PlayerRegisteredMessage, 'type'>
 type PlayerRegistrationListener = (
   registration: PlayerRegistration,
   sender: chrome.runtime.MessageSender

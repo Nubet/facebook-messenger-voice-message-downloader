@@ -1,4 +1,5 @@
 import type {AudioCandidate} from '../../domain/audio/audio-candidate'
+import {isRecord} from '../../shared/is-record'
 
 type BlobDetectedMessage = {
   source: 'VOICE_MESSAGE_DOWNLOADER'
@@ -62,14 +63,13 @@ export class BlobAudioSource {
 }
 
 function isBlobDetectedMessage(value: unknown): value is BlobDetectedMessage {
-  if (typeof value !== 'object' || value === null) return false
+  if (!isRecord(value)) return false
 
-  const message = value as Partial<BlobDetectedMessage>
   return (
-    message.source === 'VOICE_MESSAGE_DOWNLOADER' &&
-    message.type === 'audio.blob-detected' &&
-    typeof message.blobUrl === 'string' &&
-    typeof message.blobType === 'string' &&
-    typeof message.durationMs === 'number'
+    value.source === 'VOICE_MESSAGE_DOWNLOADER' &&
+    value.type === 'audio.blob-detected' &&
+    typeof value.blobUrl === 'string' &&
+    typeof value.blobType === 'string' &&
+    typeof value.durationMs === 'number'
   )
 }

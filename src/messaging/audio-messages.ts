@@ -3,6 +3,7 @@ import {
   isExecutionContext,
   type ExecutionContext,
 } from '../domain/audio/execution-context'
+import {isRecord} from '../shared/is-record'
 
 export type AudioDetectedMessage = {
   type: 'audio.detected'
@@ -19,35 +20,32 @@ export type PlayerRegisteredMessage = {
 export function isAudioDetectedMessage(
   value: unknown
 ): value is AudioDetectedMessage {
-  if (typeof value !== 'object' || value === null) return false
+  if (!isRecord(value)) return false
 
-  const message = value as Partial<AudioDetectedMessage>
-  return message.type === 'audio.detected' && isAudioCandidate(message.candidate)
+  return value.type === 'audio.detected' && isAudioCandidate(value.candidate)
 }
 
 export function isPlayerRegisteredMessage(
   value: unknown
 ): value is PlayerRegisteredMessage {
-  if (typeof value !== 'object' || value === null) return false
+  if (!isRecord(value)) return false
 
-  const message = value as Partial<PlayerRegisteredMessage>
   return (
-    message.type === 'player.registered' &&
-    typeof message.playerId === 'string' &&
-    typeof message.durationMs === 'number' &&
-    isExecutionContext(message.context)
+    value.type === 'player.registered' &&
+    typeof value.playerId === 'string' &&
+    typeof value.durationMs === 'number' &&
+    isExecutionContext(value.context)
   )
 }
 
 function isAudioCandidate(value: unknown): value is AudioCandidate {
-  if (typeof value !== 'object' || value === null) return false
+  if (!isRecord(value)) return false
 
-  const candidate = value as Partial<AudioCandidate>
   return (
-    typeof candidate.url === 'string' &&
-    typeof candidate.durationMs === 'number' &&
-    (candidate.mimeType === null || typeof candidate.mimeType === 'string') &&
-    (candidate.source === 'network' || candidate.source === 'blob') &&
-    isExecutionContext(candidate.context)
+    typeof value.url === 'string' &&
+    typeof value.durationMs === 'number' &&
+    (value.mimeType === null || typeof value.mimeType === 'string') &&
+    (value.source === 'network' || value.source === 'blob') &&
+    isExecutionContext(value.context)
   )
 }
