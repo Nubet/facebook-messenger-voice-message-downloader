@@ -45,9 +45,9 @@
     "default_popup": "popup/index.html"
   },
   "background": {
-    "chromium:service_worker": "background.ts",
+    "chromium:service_worker": "background/entry.ts",
     "firefox:scripts": [
-      "background.ts"
+      "background/entry.ts"
     ]
   },
   "content_scripts": [
