@@ -1,9 +1,9 @@
-const SETTINGS_KEY = 'extensionSettings'
-const DEFAULT_SETTINGS = {enabled: true}
-
-type ExtensionSettings = typeof DEFAULT_SETTINGS
-type StorageChange = {newValue?: unknown}
-type ActiveTab = {url?: string}
+import {
+  DEFAULT_EXTENSION_SETTINGS,
+  type ExtensionSettings,
+} from '../domain/settings/extension-settings'
+import {browserStorage} from '../infrastructure/browser/browser-storage'
+import {browserTabs} from '../infrastructure/browser/browser-tabs'
 
 export type PopupStatus = 'loading' | 'ready' | 'error'
 
@@ -18,7 +18,7 @@ type PopupSnapshot = {
 const listeners = new Set<() => void>()
 
 let snapshot: PopupSnapshot = {
-  ...DEFAULT_SETTINGS,
+  ...DEFAULT_EXTENSION_SETTINGS,
   isSupportedPage: false,
   pageName: 'Unknown',
   status: 'loading',
@@ -39,7 +39,7 @@ export async function setEnabled(enabled: boolean) {
   updateSnapshot({enabled, errorMessage: null})
 
   try {
-    await setStorage({enabled})
+    await browserStorage.setSettings({enabled})
   } catch {
     updateSnapshot({
       status: 'error',
@@ -49,20 +49,18 @@ export async function setEnabled(enabled: boolean) {
 }
 
 void initializePopupState()
-chrome.storage.onChanged.addListener(handleStorageChange)
+browserStorage.subscribeToSettings(handleSettingsChange)
 
 async function initializePopupState() {
   try {
-    const [{[SETTINGS_KEY]: storedSettings}, [activeTab]] = await Promise.all([
-      getStorage(),
-      getActiveTab(),
+    const [settings, activeTab] = await Promise.all([
+      browserStorage.getSettings(),
+      browserTabs.getActiveTab(),
     ])
     const page = getPageDetails(activeTab?.url)
 
     updateSnapshot({
-      enabled: isExtensionSettings(storedSettings)
-        ? storedSettings.enabled
-        : DEFAULT_SETTINGS.enabled,
+      enabled: settings.enabled,
       isSupportedPage: page.isSupported,
       pageName: page.name,
       status: 'ready',
@@ -81,67 +79,8 @@ function updateSnapshot(update: Partial<PopupSnapshot>) {
   listeners.forEach((listener) => listener())
 }
 
-function getStorage() {
-  return new Promise<Record<string, unknown>>((resolve, reject) => {
-    chrome.storage.local.get(SETTINGS_KEY, (result) => {
-      const error = chrome.runtime.lastError
-      if (error) {
-        reject(new Error(error.message))
-        return
-      }
-
-      resolve(result)
-    })
-  })
-}
-
-function setStorage(settings: ExtensionSettings) {
-  return new Promise<void>((resolve, reject) => {
-    chrome.storage.local.set({[SETTINGS_KEY]: settings}, () => {
-      const error = chrome.runtime.lastError
-      if (error) {
-        reject(new Error(error.message))
-        return
-      }
-
-      resolve()
-    })
-  })
-}
-
-function getActiveTab() {
-  return new Promise<ActiveTab[]>((resolve, reject) => {
-    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-      const error = chrome.runtime.lastError
-      if (error) {
-        reject(new Error(error.message))
-        return
-      }
-
-      resolve(tabs)
-    })
-  })
-}
-
-function handleStorageChange(
-  changes: Record<string, StorageChange>,
-  areaName: string
-) {
-  if (areaName !== 'local' || !changes[SETTINGS_KEY]) return
-
-  const nextSettings = changes[SETTINGS_KEY].newValue
-  if (!isExtensionSettings(nextSettings)) return
-
-  updateSnapshot({enabled: nextSettings.enabled, errorMessage: null})
-}
-
-function isExtensionSettings(value: unknown): value is ExtensionSettings {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'enabled' in value &&
-    typeof value.enabled === 'boolean'
-  )
+function handleSettingsChange(settings: ExtensionSettings) {
+  updateSnapshot({enabled: settings.enabled, errorMessage: null})
 }
 
 function getPageDetails(url: string | undefined) {
