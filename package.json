@@ -3,6 +3,8 @@
   "name": "facebook-messenger-voice-message-downloader",
   "description": "Downloads voice messages from Facebook and Messenger.",
   "version": "1.0.0",
+  "author": "Norbert Fila",
+  "homepage": "https://norbertfila.com",
   "license": "MIT",
   "type": "module",
   "dependencies": {
