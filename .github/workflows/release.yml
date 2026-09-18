@@ -1,0 +1,59 @@
+name: Release extension
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and release extension
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Validate version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG#v}"
+          TAG_VERSION="$VERSION" node - <<'NODE'
+          const fs = require('node:fs')
+
+          const expected = process.env.TAG_VERSION
+          for (const file of ['package.json', 'src/manifest.json']) {
+            const actual = JSON.parse(fs.readFileSync(file, 'utf8')).version
+            if (actual !== expected) {
+              console.error(`${file} has version ${actual}; expected ${expected}`)
+              process.exit(1)
+            }
+          }
+          NODE
+
+      - name: Run tests
+        run: npm test
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Build browser packages and create release
+        run: |
+          bash -eu -o pipefail -c '
+          for browser in chrome edge firefox; do
+            npx extension build --browser "$browser" --zip --zip-filename "facebook-messenger-voice-message-downloader-${GITHUB_REF_NAME}-${browser}.zip" --silent
+          done
+          gh release create "$GITHUB_REF_NAME" dist/chrome/*.zip dist/edge/*.zip dist/firefox/*.zip --repo "${GITHUB_REPOSITORY}" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
