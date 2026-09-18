@@ -1,0 +1,25 @@
+:root {
+  color: #172033;
+  background: #ffffff;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-width: 280px;
+}
+
+.popup {
+  padding: 16px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 16px;
+}
+
+p {
+  margin: 8px 0 0;
+  color: #5d687d;
+  font-size: 13px;
+}
