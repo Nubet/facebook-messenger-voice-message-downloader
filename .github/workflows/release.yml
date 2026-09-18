@@ -48,33 +48,13 @@ jobs:
               exit 1
             fi
 
-            VERSION="$VERSION" node - <<'NODE'
-            const fs = require('node:fs')
-
-            const version = process.env.VERSION
-            for (const file of ['package.json', 'src/manifest.json']) {
-              const json = JSON.parse(fs.readFileSync(file, 'utf8'))
-              json.version = version
-              fs.writeFileSync(file, `${JSON.stringify(json, null, 2)}\n`)
-            }
-            NODE
+            VERSION="$VERSION" node -e 'const fs = require("node:fs"); const version = process.env.VERSION; for (const file of ["package.json", "src/manifest.json"]) { const json = JSON.parse(fs.readFileSync(file, "utf8")); json.version = version; fs.writeFileSync(file, JSON.stringify(json, null, 2) + "\n"); }'
 
             RELEASE_TAG="v$VERSION"
           else
             RELEASE_TAG="$TAG_NAME"
             VERSION="${RELEASE_TAG#v}"
-            VERSION="$VERSION" node - <<'NODE'
-            const fs = require('node:fs')
-
-            const expected = process.env.VERSION
-            for (const file of ['package.json', 'src/manifest.json']) {
-              const actual = JSON.parse(fs.readFileSync(file, 'utf8')).version
-              if (actual !== expected) {
-                console.error(`${file} has version ${actual}; expected ${expected}`)
-                process.exit(1)
-              }
-            }
-            NODE
+            VERSION="$VERSION" node -e 'const fs = require("node:fs"); const expected = process.env.VERSION; for (const file of ["package.json", "src/manifest.json"]) { const actual = JSON.parse(fs.readFileSync(file, "utf8")).version; if (actual !== expected) { console.error(file + " has version " + actual + "; expected " + expected); process.exit(1); } }'
           fi
 
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
