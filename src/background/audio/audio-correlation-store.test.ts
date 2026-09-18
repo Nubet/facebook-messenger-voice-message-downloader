@@ -52,4 +52,17 @@ describe('audio correlation store', () => {
 
     await expect(store.takeCandidate('player-1', context)).resolves.toBeNull()
   })
+
+  it('keeps a candidate available until a download succeeds', async () => {
+    const store = new AudioCorrelationStore()
+    const candidate = createCandidate()
+
+    await store.registerPlayer('player-1', 4_000, context)
+    await store.registerAudio(candidate)
+
+    await expect(store.getCandidate('player-1', context)).resolves.toEqual(candidate)
+    await expect(store.getCandidate('player-1', context)).resolves.toEqual(candidate)
+    await expect(store.takeCandidate('player-1', context)).resolves.toEqual(candidate)
+    await expect(store.getCandidate('player-1', context)).resolves.toBeNull()
+  })
 })

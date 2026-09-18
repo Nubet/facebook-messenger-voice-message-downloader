@@ -9,8 +9,14 @@ import {downloadAsWav} from './media/audio-converter'
 import {resolveAudioDuration} from './media/audio-analyzer'
 import {PlayerScanner} from './player-scanner'
 import {browserMessaging} from '../infrastructure/browser/browser-messaging'
+import {browserStorage} from '../infrastructure/browser/browser-storage'
 import type {ExecutionContext} from '../domain/audio/execution-context'
 import {injectDownloadButton} from './ui/download-button'
+import {
+  diagnosticError,
+  diagnosticInfo,
+  setDiagnosticsEnabled,
+} from '../shared/diagnostics'
 
 let playerSequence = 0
 
@@ -22,14 +28,37 @@ export default function initial() {
     const context: ExecutionContext = {tabId: null, frameId: 0}
     const playerId = `player-${Date.now()}-${playerSequence++}`
 
-    browserMessaging.sendPlayerRegistration({
+    void browserMessaging.sendPlayerRegistration({
       playerId,
       durationMs: player.durationMs,
       context,
     })
 
     return injectDownloadButton(player.injectionTarget, () => {
-      browserMessaging.sendDownloadRequest(playerId, context)
+      return browserMessaging
+        .sendPlayerRegistration({playerId, durationMs: player.durationMs, context})
+        .catch((error: unknown) => {
+          diagnosticError('download.player-registration.failed', error, {playerId})
+        })
+        .then(() => browserStorage.getSettings())
+        .then((settings) => {
+          setDiagnosticsEnabled(settings.diagnostics)
+          diagnosticInfo('download.button.clicked', {playerId, context})
+          diagnosticInfo('download.player-registration.refreshed', {
+            playerId,
+            durationMs: player.durationMs,
+          })
+          diagnosticInfo('download.settings', {playerId, downloadFormat: settings.downloadFormat})
+          return browserMessaging.requestDownload(playerId, context, settings.downloadFormat)
+        })
+        .catch((error: unknown) => {
+          diagnosticError('download.settings.failed', error, {playerId})
+          return browserMessaging.requestDownload(playerId, context, 'original')
+        })
+        .then((result) => {
+          diagnosticInfo('download.result', {playerId, result})
+          if (!result.success) throw new Error(result.error ?? 'Download failed.')
+        })
     })
   })
   const blobAudioSource = new BlobAudioSource((candidate) => {
@@ -56,12 +85,22 @@ export default function initial() {
       )
       unsubscribeBlobDownloads = browserMessaging.subscribeToBlobDownloads(
         (message) => {
-          void downloadBlobUrl(message.url, message.filename).catch(() => {})
+          return downloadBlobUrl(message.url, message.filename)
+            .then(() => ({success: true}))
+            .catch((error: unknown) => {
+              diagnosticError('download.blob.failed', error, {url: message.url})
+              return {success: false, error: error instanceof Error ? error.message : 'Download failed.'}
+            })
         }
       )
       unsubscribeConvertedDownloads = browserMessaging.subscribeToConvertedDownloads(
         (message) => {
-          void downloadAsWav(message.url, message.filename).catch(() => {})
+          return downloadAsWav(message.url, message.filename)
+            .then(() => ({success: true}))
+            .catch((error: unknown) => {
+              diagnosticError('download.wav.failed', error, {url: message.url, filename: message.filename})
+              return {success: false, error: error instanceof Error ? error.message : 'WAV conversion failed.'}
+            })
         }
       )
     },

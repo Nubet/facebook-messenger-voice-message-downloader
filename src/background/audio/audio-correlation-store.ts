@@ -113,7 +113,7 @@ export class AudioCorrelationStore {
     return null
   }
 
-  async takeCandidate(playerId: string, context: ExecutionContext) {
+  async getCandidate(playerId: string, context: ExecutionContext) {
     await this.readyPromise
     this.cleanup()
 
@@ -121,9 +121,22 @@ export class AudioCorrelationStore {
     const readyCandidate = this.readyCandidates.get(key)
     if (!readyCandidate) return null
 
+    return readyCandidate.candidate
+  }
+
+  async takeCandidate(playerId: string, context: ExecutionContext) {
+    await this.readyPromise
+    this.cleanup()
+
+    const key = this.getPlayerKey(playerId, context)
+    if (!this.readyCandidates.has(key)) return null
+
+    const candidate = await this.getCandidate(playerId, context)
+    if (!candidate) return null
+
     this.readyCandidates.delete(key)
     await this.persist()
-    return readyCandidate.candidate
+    return candidate
   }
 
   private async restore() {

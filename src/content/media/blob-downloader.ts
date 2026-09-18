@@ -15,6 +15,6 @@ export async function downloadBlobUrl(url: string, filename: string) {
     })
   } finally {
     link.remove()
-    URL.revokeObjectURL(url)
+    // The URL belongs to the audio candidate and may be reused for WAV conversion
   }
 }
