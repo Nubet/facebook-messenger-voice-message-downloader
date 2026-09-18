@@ -2,7 +2,7 @@ export type DownloadButtonCleanup = () => void
 
 export function injectDownloadButton(
   target: HTMLElement,
-  onDownload: () => void
+  onDownload: () => Promise<void>
 ): DownloadButtonCleanup {
   const button = document.createElement('button')
   let resetTimer: number | null = null
@@ -31,18 +31,32 @@ export function injectDownloadButton(
     if (button.disabled) return
 
     button.disabled = true
-    button.textContent = 'Requested'
+    button.textContent = 'Downloading...'
     button.style.cursor = 'default'
     button.style.opacity = '0.65'
-    onDownload()
 
-    resetTimer = window.setTimeout(() => {
-      button.disabled = false
-      button.textContent = 'Download'
-      button.style.cursor = 'pointer'
-      button.style.opacity = '1'
-      resetTimer = null
-    }, 1500)
+    void onDownload()
+      .then(() => {
+        button.textContent = 'Downloaded'
+        button.style.background = '#16803c'
+      })
+      .catch((error: unknown) => {
+        button.textContent = 'Download failed'
+        button.title = error instanceof Error ? error.message : 'Download failed.'
+        button.style.background = '#b42318'
+      })
+      .finally(() => {
+        resetTimer = window.setTimeout(() => {
+          button.style.background = '#1f2937'
+          button.title = ''
+          button.disabled = false
+          button.textContent = 'Download'
+          button.style.cursor = 'pointer'
+          button.style.opacity = '1'
+          resetTimer = null
+        }, 2500)
+      })
+
   }
 
   button.addEventListener('click', handleClick)

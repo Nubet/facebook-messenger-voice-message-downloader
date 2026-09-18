@@ -3,11 +3,18 @@ import {
   type ExecutionContext,
 } from '../domain/audio/execution-context'
 import {isRecord} from '../shared/is-record'
+import type {DownloadFormat} from '../domain/settings/extension-settings'
+
+export type DownloadResult = {
+  success: boolean
+  error?: string
+}
 
 export type DownloadRequestedMessage = {
   type: 'download.requested'
   playerId: string
   context: ExecutionContext
+  downloadFormat: DownloadFormat
 }
 
 export type BlobDownloadMessage = {
@@ -30,7 +37,8 @@ export function isDownloadRequestedMessage(
   return (
     value.type === 'download.requested' &&
     typeof value.playerId === 'string' &&
-    isExecutionContext(value.context)
+    isExecutionContext(value.context) &&
+    (value.downloadFormat === 'original' || value.downloadFormat === 'wav')
   )
 }
 
