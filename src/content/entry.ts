@@ -7,12 +7,22 @@ import {BlobAudioSource} from './media/blob-audio-source'
 import {resolveAudioDuration} from './media/audio-analyzer'
 import {PlayerScanner} from './player-scanner'
 import {browserMessaging} from '../infrastructure/browser/browser-messaging'
+import type {ExecutionContext} from '../domain/audio/execution-context'
+
+let playerSequence = 0
 
 export default function initial() {
   const adapter = getPlayerAdapter(location.hostname)
   if (!adapter) return () => {}
 
-  const scanner = new PlayerScanner(adapter)
+  const scanner = new PlayerScanner(adapter, (player) => {
+    const context: ExecutionContext = {tabId: null, frameId: 0}
+    browserMessaging.sendPlayerRegistration({
+      playerId: `player-${Date.now()}-${playerSequence++}`,
+      durationMs: player.durationMs,
+      context,
+    })
+  })
   const blobAudioSource = new BlobAudioSource((candidate) => {
     browserMessaging.sendAudioCandidateToBackground(candidate)
   })

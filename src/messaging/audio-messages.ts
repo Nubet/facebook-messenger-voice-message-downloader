@@ -1,8 +1,19 @@
 import type {AudioCandidate} from '../domain/audio/audio-candidate'
+import {
+  isExecutionContext,
+  type ExecutionContext,
+} from '../domain/audio/execution-context'
 
 export type AudioDetectedMessage = {
   type: 'audio.detected'
   candidate: AudioCandidate
+}
+
+export type PlayerRegisteredMessage = {
+  type: 'player.registered'
+  playerId: string
+  durationMs: number
+  context: ExecutionContext
 }
 
 export function isAudioDetectedMessage(
@@ -12,6 +23,20 @@ export function isAudioDetectedMessage(
 
   const message = value as Partial<AudioDetectedMessage>
   return message.type === 'audio.detected' && isAudioCandidate(message.candidate)
+}
+
+export function isPlayerRegisteredMessage(
+  value: unknown
+): value is PlayerRegisteredMessage {
+  if (typeof value !== 'object' || value === null) return false
+
+  const message = value as Partial<PlayerRegisteredMessage>
+  return (
+    message.type === 'player.registered' &&
+    typeof message.playerId === 'string' &&
+    typeof message.durationMs === 'number' &&
+    isExecutionContext(message.context)
+  )
 }
 
 function isAudioCandidate(value: unknown): value is AudioCandidate {
@@ -24,16 +49,5 @@ function isAudioCandidate(value: unknown): value is AudioCandidate {
     (candidate.mimeType === null || typeof candidate.mimeType === 'string') &&
     (candidate.source === 'network' || candidate.source === 'blob') &&
     isExecutionContext(candidate.context)
-  )
-}
-
-function isExecutionContext(value: unknown) {
-  if (typeof value !== 'object' || value === null) return false
-
-  const context = value as {tabId?: unknown; frameId?: unknown; documentId?: unknown}
-  return (
-    (typeof context.tabId === 'number' || context.tabId === null) &&
-    typeof context.frameId === 'number' &&
-    (context.documentId === undefined || typeof context.documentId === 'string')
   )
 }
