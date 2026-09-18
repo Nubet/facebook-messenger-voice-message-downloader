@@ -1,6 +1,7 @@
 import {useSyncExternalStore} from 'react'
 import {
   getPopupSnapshot,
+  setDiagnostics,
   setDownloadFormat,
   setEnabled,
   subscribeToPopupState,
@@ -21,7 +22,7 @@ function PopupContent() {
 
   const pageStatus = snapshot.isSupportedPage
     ? `Ready on ${snapshot.pageName}`
-    : 'Not supported on this page'
+    : 'Messenger/Facebook page not detected.'
   const extensionVersion = chrome.runtime.getManifest().version
 
   return (
@@ -48,6 +49,19 @@ function PopupContent() {
           checked={snapshot.enabled}
           disabled={snapshot.status === 'loading'}
           onChange={(event) => void setEnabled(event.target.checked)}
+        />
+      </label>
+
+      <label className="toggle_row">
+        <span>
+          <strong>Diagnostics</strong>
+          <small>Show troubleshooting logs</small>
+        </span>
+        <input
+          type="checkbox"
+          checked={snapshot.diagnostics}
+          disabled={snapshot.status === 'loading'}
+          onChange={(event) => void setDiagnostics(event.target.checked)}
         />
       </label>
 

@@ -10,6 +10,8 @@ export type PopupStatus = 'loading' | 'ready' | 'error'
 
 type PopupSnapshot = {
   enabled: boolean
+  downloadFormat: DownloadFormat
+  diagnostics: boolean
   isSupportedPage: boolean
   pageName: 'Facebook' | 'Messenger' | 'Unknown'
   status: PopupStatus
@@ -43,6 +45,7 @@ export async function setEnabled(enabled: boolean) {
     await browserStorage.setSettings({
       enabled,
       downloadFormat: snapshot.downloadFormat,
+      diagnostics: snapshot.diagnostics,
     })
   } catch {
     updateSnapshot({
@@ -56,7 +59,28 @@ export async function setDownloadFormat(downloadFormat: DownloadFormat) {
   updateSnapshot({downloadFormat, errorMessage: null})
 
   try {
-    await browserStorage.setSettings({enabled: snapshot.enabled, downloadFormat})
+    await browserStorage.setSettings({
+      enabled: snapshot.enabled,
+      downloadFormat,
+      diagnostics: snapshot.diagnostics,
+    })
+  } catch {
+    updateSnapshot({
+      status: 'error',
+      errorMessage: 'Could not save settings.',
+    })
+  }
+}
+
+export async function setDiagnostics(diagnostics: boolean) {
+  updateSnapshot({diagnostics, errorMessage: null})
+
+  try {
+    await browserStorage.setSettings({
+      enabled: snapshot.enabled,
+      downloadFormat: snapshot.downloadFormat,
+      diagnostics,
+    })
   } catch {
     updateSnapshot({
       status: 'error',
@@ -79,6 +103,7 @@ async function initializePopupState() {
     updateSnapshot({
       enabled: settings.enabled,
       downloadFormat: settings.downloadFormat,
+      diagnostics: settings.diagnostics,
       isSupportedPage: page.isSupported,
       pageName: page.name,
       status: 'ready',
@@ -101,6 +126,7 @@ function handleSettingsChange(settings: ExtensionSettings) {
   updateSnapshot({
     enabled: settings.enabled,
     downloadFormat: settings.downloadFormat,
+    diagnostics: settings.diagnostics,
     errorMessage: null,
   })
 }
