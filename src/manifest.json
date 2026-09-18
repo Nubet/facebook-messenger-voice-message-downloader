@@ -24,7 +24,13 @@
   },
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "https://*.fbcdn.net/*",
+    "https://*.fbsbx.com/*",
+    "https://*.cdninstagram.com/*"
   ],
   "chromium:action": {
     "default_icon": {
@@ -55,6 +61,17 @@
     ]
   },
   "content_scripts": [
+    {
+      "matches": [
+        "https://www.facebook.com/*",
+        "https://www.messenger.com/*"
+      ],
+      "js": [
+        "content/media/blob-interceptor.ts"
+      ],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
     {
       "matches": [
         "https://www.facebook.com/*",
