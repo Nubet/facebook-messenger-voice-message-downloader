@@ -20,6 +20,8 @@
  * - Microsoft: RIFF file format
  *   https://learn.microsoft.com/en-us/windows/win32/xaudio2/resource-interchange-file-format--riff-
  */
+import {diagnosticError, diagnosticInfo} from '../../shared/diagnostics'
+
 const WAV_HEADER_SIZE = 44
 
 /**
@@ -31,10 +33,12 @@ const WAV_HEADER_SIZE = 44
  * scoped to the current page.
  */
 export async function downloadAsWav(url: string, filename: string) {
+  diagnosticInfo('wav.fetch.start', {url: describeUrl(url), filename})
   const response = await fetch(url, {credentials: 'include'})
   if (!response.ok) throw new Error(`Audio request failed: ${response.status}`)
 
   const audioData = await response.arrayBuffer()
+  diagnosticInfo('wav.fetch.complete', {url: describeUrl(url), bytes: audioData.byteLength})
   const context = new AudioContext()
 
   try {
@@ -42,10 +46,24 @@ export async function downloadAsWav(url: string, filename: string) {
     // PCM samples in an AudioBuffer. The copy avoids implementations that
     // detach or reuse the original response buffer.
     const decoded = await context.decodeAudioData(audioData.slice(0))
+    diagnosticInfo('wav.decode.complete', {
+      channels: decoded.numberOfChannels,
+      sampleRate: decoded.sampleRate,
+      frames: decoded.length,
+    })
     const wav = encodeWav(decoded)
     triggerDownload(wav, filename)
   } finally {
     await context.close()
+  }
+}
+
+function describeUrl(url: string) {
+  try {
+    const parsed = new URL(url)
+    return `${parsed.protocol}//${parsed.host}${parsed.pathname}`
+  } catch {
+    return `${url.slice(0, 100)}${url.length > 100 ? '...' : ''}`
   }
 }
 
