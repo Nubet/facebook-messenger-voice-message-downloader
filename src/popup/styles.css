@@ -22,8 +22,9 @@ body {
 }
 
 .popup_header img {
-  width: 32px;
-  height: 32px;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
 }
 
 .popup_header p,
@@ -33,7 +34,6 @@ body {
   font-size: 12px;
 }
 
-.status_card,
 .toggle_row {
   display: flex;
   align-items: center;
@@ -42,27 +42,6 @@ body {
   padding: 12px;
   border: 1px solid #e2e6ee;
   border-radius: 10px;
-}
-
-.status_card {
-  justify-content: flex-start;
-  gap: 8px;
-  font-size: 13px;
-}
-
-.status_dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #9aa4b5;
-}
-
-.status_dot_ready {
-  background: #16a36a;
-}
-
-.status_dot_error {
-  background: #d14343;
 }
 
 .toggle_row {

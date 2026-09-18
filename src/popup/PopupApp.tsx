@@ -3,7 +3,6 @@ import {
   getPopupSnapshot,
   setEnabled,
   subscribeToPopupState,
-  type PopupStatus,
 } from './popup-state'
 
 export default function PopupApp() {
@@ -26,17 +25,16 @@ function PopupContent() {
   return (
     <main className="popup" aria-labelledby="popup-title">
       <header className="popup_header">
-        <img src="../images/icon-32.png" alt="" aria-hidden="true" />
+        <img
+          src="../images/icon-transparent-128.png"
+          alt=""
+          aria-hidden="true"
+        />
         <div>
           <h1 id="popup-title">Voice Message Downloader</h1>
           <p>{pageStatus}</p>
         </div>
       </header>
-
-      <section className="status_card" aria-live="polite">
-        <span className={`status_dot status_dot_${snapshot.status}`} />
-        <span>{getStatusLabel(snapshot.status)}</span>
-      </section>
 
       <label className="toggle_row">
         <span>
@@ -58,11 +56,4 @@ function PopupContent() {
       ) : null}
     </main>
   )
-}
-
-function getStatusLabel(status: PopupStatus) {
-  if (status === 'loading') return 'Loading settings'
-  if (status === 'error') return 'Settings unavailable'
-
-  return 'Extension ready'
 }

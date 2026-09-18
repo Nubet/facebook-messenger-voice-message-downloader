@@ -16,11 +16,10 @@
   "name": "facebook-messenger-voice-message-downloader",
   "description": "Downloads voice messages from Facebook and Messenger.",
   "icons": {
-    "16": "images/icon-16.png",
-    "32": "images/icon-32.png",
-    "48": "images/icon-48.png",
-    "64": "images/icon-64.png",
-    "128": "images/icon-128.png"
+    "64": "images/icon-transparent-64.png",
+    "128": "images/icon-transparent-128.png",
+    "256": "images/icon-transparent-256.png",
+    "512": "images/icon-transparent-512.png"
   },
   "permissions": [
     "storage",
@@ -35,22 +34,20 @@
   ],
   "chromium:action": {
     "default_icon": {
-      "16": "images/icon-16.png",
-      "32": "images/icon-32.png",
-      "48": "images/icon-48.png",
-      "64": "images/icon-64.png",
-      "128": "images/icon-128.png"
+      "64": "images/icon-transparent-64.png",
+      "128": "images/icon-transparent-128.png",
+      "256": "images/icon-transparent-256.png",
+      "512": "images/icon-transparent-512.png"
     },
     "default_title": "Voice Message Downloader",
     "default_popup": "popup/index.html"
   },
   "firefox:browser_action": {
     "default_icon": {
-      "16": "images/icon-16.png",
-      "32": "images/icon-32.png",
-      "48": "images/icon-48.png",
-      "64": "images/icon-64.png",
-      "128": "images/icon-128.png"
+      "64": "images/icon-transparent-64.png",
+      "128": "images/icon-transparent-128.png",
+      "256": "images/icon-transparent-256.png",
+      "512": "images/icon-transparent-512.png"
     },
     "default_title": "Voice Message Downloader",
     "default_popup": "popup/index.html"
