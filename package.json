@@ -13,8 +13,9 @@
     "@types/chrome": "^0.0.287",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
+    "extension": "^4.1.23",
     "typescript": "7.0.2",
-    "extension": "^4.1.23"
+    "vitest": "5.0.1"
   },
   "scripts": {
     "dev": "extension dev",
@@ -23,7 +24,8 @@
     "preview": "extension preview",
     "build:chrome": "extension build --browser chrome",
     "build:firefox": "extension build --browser firefox",
-    "build:edge": "extension build --browser edge"
+    "build:edge": "extension build --browser edge",
+    "test": "vitest run"
   },
   "packageManager": "npm@11.13.0"
 }
